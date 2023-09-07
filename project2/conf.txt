@@ -1,0 +1,4 @@
+python readall.py /home/user/share/project2/ship1/ /home/user/mount1/620동원/ best2.pt result/ship1/ --meta CAM3 --cut 250 100 650 500
+python readall.py /home/user/share/project2/ship2/ /home/user/mount1/722오룡/ best2.pt result/ship2/ --meta CAM3 --cut 300 150 650 500
+python readall.py /home/user/share/project2/ship3/ /home/user/mount1/723오룡/ best2.pt result/ship3/ --meta CAM2 --cut 80 300 500 540
+python readall.py /home/user/share/project2/ship4/ /home/user/mount1/토니나3/ best2.pt result/ship4/ --meta CAM2 --cut 50 100 700 540
