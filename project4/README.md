@@ -1,0 +1,3 @@
+- extract_frames : index.csv와 ignore.csv에 기반한 프레임 추출 코드
+- filesort : 영상 이름에 기반해서 선박명/날짜를 index.csv로 정리한다.
+- copyvideos : index.csv와 지정한 선박명/날짜에 해당하는 영상을 복사한다.

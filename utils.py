@@ -132,6 +132,8 @@ def extract_frames(filepath:Union[str, list, tuple],
                 start = (start - length) / fd
         except Exception as e:
             if raise_exception:
+                if v.isOpened():
+                    v.release()
                 raise e
             #if raise_exception is False, ignore exception
             print(f"exception in {f}, ignore...", flush=True)
@@ -241,6 +243,11 @@ def detect_a_folder(
     if verbose: print(f"start predict...", end="", flush=True)
     preds = model.predict(f"{path}/", stream=True)
     class_names = None
+
+    if valid_range[2] == -1:
+        valid_range = preds[0].orig_shape[1]
+    if valid_range[3] == -1:
+        valid_range = preds[0].orig_shape[0]
     
     for pred in preds:
         if class_names is None:
@@ -321,4 +328,89 @@ def extract_timing(result:pd.DataFrame, video_folder:str, fps=None, custom_video
 
     return result
     
+def get_duplicate_area_rate(xyxy1, xyxy2):
+    duplicate_area = [max(xyxy1[0], xyxy2[0]), max(xyxy1[1], xyxy2[1]), min(xyxy1[2], xyxy2[2]), min(xyxy1[3], xyxy2[3])]
+    if duplicate_area[2] - duplicate_area[0] < 0 or duplicate_area[3] - duplicate_area[1] < 0:
+        return [0, 0]
 
+    duplicate_area = (duplicate_area[2] - duplicate_area[0]) * (duplicate_area[3] - duplicate_area[1])
+
+    area1 = (xyxy1[2] - xyxy1[0]) * (xyxy1[3] - xyxy1[1])
+
+    area2 = (xyxy2[2] - xyxy2[0]) * (xyxy2[3] - xyxy2[1])
+
+    return [duplicate_area / area1, duplicate_area / area2]
+
+def yolo_cut_by_range(preds, target_class:int, x1, y1, x2, y2, allowed_duplicate_rate:1.0):
+    """
+    return is 3-nested list
+
+    1D : list of preds
+
+    2D : target objects of pred
+
+    3D : [xyxy, conf_score] of target-object
+
+    """
+    result = []
+
+    if x2 == -1:
+        x2 = preds[0].orig_shape[1]
+    if y2 == -1:
+        y2 = preds[0].orig_shape[0]
+
+    #Union-Find Algorithm
+    def union_find(parent, x):
+        if parent[x] == x:
+            return x
+        
+        parent[x] = union_find(parent, parent[x])
+        return parent[x]
+        
+    def union_union(parent, x, y):
+        xp = union_find(parent, x)
+        yp = union_find(parent, y)
+        parent[yp] = xp
+
+    for pred in preds:
+        boxes = pred.boxes.cpu()
+        tmp_result = []
+        if len(boxes.cls):
+            for cls, conf, xyxy in zip(boxes.cls, boxes.conf, boxes.xyxy):
+                if int(cls) == target_class:
+                    #must bounding box is contain in valid_range box.
+                    if (xyxy[0] < x1) or (xyxy[1] < y1) or (xyxy[2] > x2) or (xyxy[3] > y2):
+                        continue
+                    tmp_result.append([xyxy, conf])
+
+        #make a group by duplicated_area using union-find
+        parent = np.arange(len(tmp_result))
+        for i in range(len(tmp_result)):
+            for j in range(i+1, len(tmp_result)):
+                rate = get_duplicate_area_rate(tmp_result[i][0], tmp_result[j][0])
+                if rate[0] > allowed_duplicate_rate or rate[1] > allowed_duplicate_rate:
+                    union_union(parent, i, j)
+        
+        #sort all groups
+        line_groups = {}
+        for i, p in enumerate(parent):
+            if p in line_groups:
+                line_groups[p].append(i)
+            else:
+                line_groups[p] = [i]
+        
+        #determind one box from each groups (remove duplicated detection)
+        selected_tmp_result = []
+        for key, item in line_groups.items():
+            max_conf = 0
+            max_index = None
+            for tmp_result_index in item:
+                xyxy, conf = tmp_result[tmp_result_index]
+                if conf > max_conf:
+                    max_conf = conf
+                    max_index = tmp_result_index
+            selected_tmp_result.append(tmp_result[max_index])
+
+        result.append(selected_tmp_result)
+
+    return result

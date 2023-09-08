@@ -1,0 +1,7 @@
+- conf.txt : readall실행 예시
+- readall.py : 메인 프로세스 (욜로 전체 영상에 대해 실행)
+- yolo.ipynb : 훈련용 코드
+- just_run_predict : 샘플용 추론 코드
+- extract_frames : 원본 전체영상으로부터 프레임 추출 코드
+- countng : readall로 나온 csv의 일/월별 합계 내주는 코드
+- drawbox : 작업영역 찾기용 테스트코드

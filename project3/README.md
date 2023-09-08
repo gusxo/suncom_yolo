@@ -1,0 +1,4 @@
+- yolo.ipynb : 훈련용 코드
+- just_run_predict : 샘플용 추론 코드
+- extract_frames : 원본 전체영상으로부터 프레임 추출 코드
+- drawbox : 작업영역 찾기용 테스트코드

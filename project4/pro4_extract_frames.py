@@ -39,12 +39,26 @@ for i in range(ignore.shape[0]):
 
 
 savedir = "/home/user/share/project4/"
-savedir = "/home/user/mount2/frames/"
+# savedir = "/home/user/mount2/frames/"
 
 shipnames = pd.unique(df.shipname)
 for ship in shipnames:
     dates = pd.unique(df[df.shipname == ship].date)
     for date in dates:
+        #1일의 전체 추출 코드 : 미사용
+
+        # targets = df[(df.shipname == ship) & (df.date == date)].sort_values(by="datetime").abspath
+        # save_target = f"{savedir}/{ship}/{date}/"
+        # extract_frames(targets, frame_distance=60.0, savedir=save_target, raise_exception=False, continued_video=False, sortlist=False)
+
+        #1일에서 1개만 추출 -> 영상읽기 실패시에만 다음영상으로
         targets = df[(df.shipname == ship) & (df.date == date)].sort_values(by="datetime").abspath
         save_target = f"{savedir}/{ship}/{date}/"
-        extract_frames(targets, frame_distance=60.0, savedir=save_target, raise_exception=False, continued_video=False)
+        i = 0
+        for i in range(len(targets)):
+            try:
+                extract_frames(targets[i:i+1], frame_distance=60.0, savedir=save_target, raise_exception=True, continued_video=False, sortlist=False)
+                break
+            except Exception as e:
+                pass
+            
