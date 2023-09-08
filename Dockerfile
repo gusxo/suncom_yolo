@@ -11,7 +11,7 @@ ENV USER_PASSWD=user
 RUN add-apt-repository ppa:git-core/ppa -y
 RUN apt update
 RUN apt install git -y
-RUN apt-get install -y libgli1-mesa-glx libglib2.0-0
+RUN apt-get install -y libgl1-mesa-glx libglib2.0-0
 
 #add user(superuser)
 RUN useradd -m -s /bin/bash ${USER_NAME}
