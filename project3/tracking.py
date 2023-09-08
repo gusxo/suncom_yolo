@@ -14,9 +14,15 @@ if __name__=="__main__":
     parser.add_argument("model", action="store", type=str, help="yolo model ckpt")
     parser.add_argument("save", action="store", type=str, help="save dir")
     parser.add_argument("cut", action="store", nargs=4, type=int, help="box range for line tracking")
-    parser.add_argument("--save_images", action="store_true", dest="save_images", help="save original images and detected images.")
+    parser.add_argument("--save_images", action="store_true", dest="save_images", help="save all images from througth process")
     parser.add_argument("--dup_rate", action="store", type=float, dest="dup_rate", help="allow duplicate area rate", default=0.8)
+    parser.add_argument("--tracking_limit", action="store", type=int, dest="tracking_limit", help="limit count for for un-tracking", default=1)
+    parser.add_argument("--tracking_dup_rate", action="store", type=float, dest="tracking_dup_rate", help="duplicate area rate for determind of tracking", default=0.5)
+    parser.add_argument("--frame_distance", action="store", type=float, dest="frame_distance", help="determind each frames time distance", default=0.25)
+    parser.add_argument("--save_only_track", action="store_true", dest="save_only_track", help="save tracking images.")
     args = parser.parse_args()
+
+    print(f"your arguments is : {args}")
 
     try:
         import ultralytics
@@ -32,7 +38,7 @@ if __name__=="__main__":
     
     save_root = f"{args.save}/{Path(os.path.abspath(args.video)).stem}"
     
-    images, meta = utils.extract_frames([args.video], frame_distance=0.5, sortlist=False, verbose=1, raise_exception=True, continued_video=False)
+    images, meta = utils.extract_frames([args.video], frame_distance=args.frame_distance, sortlist=False, verbose=1, raise_exception=True, continued_video=False)
 
     if args.save_images:
         savedir = f"{save_root}/target_images/"
@@ -64,3 +70,12 @@ if __name__=="__main__":
             for xyxy, conf in line_info:
                 img = cv2.rectangle(img, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0, 255, 255), 3)
             cv2.imwrite(f"{savedir}/{i}.png", img)
+
+    track_limit:int = args.tracking_limit
+    track_dup_rate:float = args.tracking_dup_rate
+
+
+
+
+
+    
