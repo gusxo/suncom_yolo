@@ -18,7 +18,7 @@ if __name__=="__main__":
     parser.add_argument("--dup_rate", action="store", type=float, dest="dup_rate", help="allow duplicate area rate", default=0.8)
     parser.add_argument("--tracking_limit", action="store", type=int, dest="tracking_limit", help="limit count for for un-tracking", default=1)
     parser.add_argument("--tracking_dup_rate", action="store", type=float, dest="tracking_dup_rate", help="duplicate area rate for determind of tracking", default=0.5)
-    parser.add_argument("--frame_distance", action="store", type=float, dest="frame_distance", help="determind each frames time distance", default=0.25)
+    parser.add_argument("--frame_distance", action="store", type=float, dest="frame_distance", help="determind each frames time distance", default=0.2)
     parser.add_argument("--save_only_track", action="store_true", dest="save_only_track", help="save tracking images.")
     args = parser.parse_args()
 

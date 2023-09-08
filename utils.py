@@ -414,3 +414,12 @@ def yolo_cut_by_range(preds, target_class:int, x1, y1, x2, y2, allowed_duplicate
         result.append(selected_tmp_result)
 
     return result
+
+def yolo_tracking(x, duplicate_rate=0.5):
+    """
+    x : return value of `utils.yolo_cut_by_range(...)`
+    """
+
+    tracked_obj = []
+    for i, objs in enumerate(x):
+        for obj in objs:
