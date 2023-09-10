@@ -5,8 +5,8 @@ import tqdm
 from typing import Union, Literal, Tuple, Callable
 from pathlib import Path
 import pandas as pd
-from ultralytics import YOLO
 import numpy as np
+from collections import deque
 
 def find(s, ch):
     return [i for i, ltr in enumerate(s) if ltr == ch]
@@ -417,9 +417,14 @@ def yolo_cut_by_range(preds, target_class:int, x1, y1, x2, y2, allowed_duplicate
 
 def yolo_tracking(x, duplicate_rate=0.5):
     """
-    x : return value of `utils.yolo_cut_by_range(...)`
+    `x` : return value of `utils.yolo_cut_by_range(...)`
     """
 
-    tracked_obj = []
+    result = []
+    tracked_obj = deque()
     for i, objs in enumerate(x):
-        for obj in objs:
+        tmp_tracked_obj = [0] * len(objs)
+        for j, obj in enumerate(objs):
+            if i:
+                dup_rate = [for ]
+        tmp_tracked_obj[j] = [next_obj_id]    
