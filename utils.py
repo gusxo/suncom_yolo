@@ -330,7 +330,7 @@ def extract_timing(result:pd.DataFrame, video_folder:str, fps=None, custom_video
     
 def get_duplicate_area_rate(xyxy1, xyxy2):
     duplicate_area = [max(xyxy1[0], xyxy2[0]), max(xyxy1[1], xyxy2[1]), min(xyxy1[2], xyxy2[2]), min(xyxy1[3], xyxy2[3])]
-    if duplicate_area[2] - duplicate_area[0] < 0 or duplicate_area[3] - duplicate_area[1] < 0:
+    if (duplicate_area[2] - duplicate_area[0]) < 0 or (duplicate_area[3] - duplicate_area[1]) < 0:
         return [0, 0]
 
     duplicate_area = (duplicate_area[2] - duplicate_area[0]) * (duplicate_area[3] - duplicate_area[1])
@@ -392,7 +392,7 @@ def yolo_cut_by_range(preds, target_class:int, x1, y1, x2, y2, allowed_duplicate
         
         #sort all groups
         line_groups = {}
-        for i, p in enumerate(parent):
+        for i, p in enumerate(map(lambda a : union_find(parent, a), range(len(parent)))):
             if p in line_groups:
                 line_groups[p].append(i)
             else:
@@ -414,23 +414,23 @@ def yolo_cut_by_range(preds, target_class:int, x1, y1, x2, y2, allowed_duplicate
 
     return result
 
-def yolo_tracking(x, duplicate_rate:float=0.6, allow_undetect_frames:int=1):
+def yolo_tracking(x, duplicate_rate:float, allow_undetect_frames:int):
     """
     `x` : return value of `utils.yolo_cut_by_range(...)`
     """
 
     result = []
-    # {start_frame_index, last_detect_index, *boxes...}
+    # list of {start_frame_index, last_detect_index, *boxes...}
     tracked_obj = []
     for frame_index, objs in enumerate(x):
-        tmp_tracked_obj = [[] for i in range(len(tracked_obj))]
+        tmp_tracked_obj = [[] for _ in range(len(tracked_obj))]
         is_not_tracked = [True] * len(objs)
-        if frame_index:
+        if len(tracked_obj):
             #find duplicated object between before frame's pred
             for obj_id, obj in enumerate(objs):
                 dup_rate = [get_duplicate_area_rate(t_obj[-1], obj[0]) for t_obj in tracked_obj]
                 max_duplicated_tracked_obj_idx = np.argmax(dup_rate) >> 1
-                if max_duplicated_tracked_obj_idx >= duplicate_rate:
+                if np.max(dup_rate) >= duplicate_rate:
                     #tmp save {obj_id, conf_score}
                     tmp_tracked_obj[max_duplicated_tracked_obj_idx].append([obj_id, obj[1]])
 
@@ -457,6 +457,7 @@ def yolo_tracking(x, duplicate_rate:float=0.6, allow_undetect_frames:int=1):
         for obj_id, obj in enumerate(objs):
             if is_not_tracked[obj_id]:
                 tracked_obj.append([frame_index, frame_index, obj[0]])
+                # print(f"{frame_index} : new object is now tracking...")
     
     #move all tracking list to result
     result.extend(tracked_obj)

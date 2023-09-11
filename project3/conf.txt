@@ -1,1 +1,4 @@
-python project3/tracking.py '/home/user/mount1/620동원/drive 1/SCMedia/VIDEO/2022/11/16/CAM4/CAM4_20221116182159.mp4' project3/best.pt ~/test 1250 800 1750 -1 --save_images --save_video
+python suncom_yolo/project3/tracking.py '/home/user/mount1/620동원/drive 1/SCMedia/VIDEO/2022/11/16/CAM4/CAM4_20221116182159.mp4' suncom_yolo/project3/best.pt ~/test 1250 800 1750 -1  --tracking_limit 3 --save_track_video
+python suncom_yolo/project3/tracking.py "/home/user/mount1/722오룡/drive 2/SCMedia/VIDEO/2022/09/04/CAM4/CAM4_20220904001508.mp4" suncom_yolo/project3/best.pt ~/test 500 850 1100 -1  --tracking_limit 3 --save_track_video
+python suncom_yolo/project3/tracking.py "/home/user/mount1/723오룡/drive/SCMedia/VIDEO/2021/12/07/CAM3/ch3_20211207182235.mp4" suncom_yolo/project3/best.pt ~/test 400 800 1000 -1  --tracking_limit 3 --save_track_video
+python suncom_yolo/project3/tracking.py "/home/user/mount1/토니나3/drive 2/VIDEO/2022/10/09/CAM3/CAM3_20221009171453.mp4" suncom_yolo/project3/best.pt ~/test 400 600 1400 -1  --tracking_limit 3 --save_track_video
