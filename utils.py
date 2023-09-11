@@ -354,11 +354,6 @@ def yolo_cut_by_range(preds, target_class:int, x1, y1, x2, y2, allowed_duplicate
     """
     result = []
 
-    if x2 == -1:
-        x2 = preds[0].orig_shape[1]
-    if y2 == -1:
-        y2 = preds[0].orig_shape[0]
-
     #Union-Find Algorithm
     def union_find(parent, x):
         if parent[x] == x:
@@ -373,6 +368,10 @@ def yolo_cut_by_range(preds, target_class:int, x1, y1, x2, y2, allowed_duplicate
         parent[yp] = xp
 
     for pred in preds:
+        if x2 == -1:
+            x2 = preds[0].orig_shape[1]
+        if y2 == -1:
+            y2 = preds[0].orig_shape[0]
         boxes = pred.boxes.cpu()
         tmp_result = []
         if len(boxes.cls):
@@ -415,16 +414,52 @@ def yolo_cut_by_range(preds, target_class:int, x1, y1, x2, y2, allowed_duplicate
 
     return result
 
-def yolo_tracking(x, duplicate_rate=0.5):
+def yolo_tracking(x, duplicate_rate:float=0.6, allow_undetect_frames:int=1):
     """
     `x` : return value of `utils.yolo_cut_by_range(...)`
     """
 
     result = []
-    tracked_obj = deque()
-    for i, objs in enumerate(x):
-        tmp_tracked_obj = [0] * len(objs)
-        for j, obj in enumerate(objs):
-            if i:
-                dup_rate = [for ]
-        tmp_tracked_obj[j] = [next_obj_id]    
+    # {start_frame_index, last_detect_index, *boxes...}
+    tracked_obj = []
+    for frame_index, objs in enumerate(x):
+        tmp_tracked_obj = [[] for i in range(len(tracked_obj))]
+        is_not_tracked = [True] * len(objs)
+        if frame_index:
+            #find duplicated object between before frame's pred
+            for obj_id, obj in enumerate(objs):
+                dup_rate = [get_duplicate_area_rate(t_obj[-1], obj[0]) for t_obj in tracked_obj]
+                max_duplicated_tracked_obj_idx = np.argmax(dup_rate) >> 1
+                if max_duplicated_tracked_obj_idx >= duplicate_rate:
+                    #tmp save {obj_id, conf_score}
+                    tmp_tracked_obj[max_duplicated_tracked_obj_idx].append([obj_id, obj[1]])
+
+        #determind which object is equal between before frame's object(by conf score)
+        #if not found equal objects : drop from tracked_obj or copy before frame's boxes (by allow_undetect_frames)
+        tmp_pop_index = []
+        for tracked_obj_id, val in enumerate(tmp_tracked_obj):
+            if len(val) > 0:
+                vals = np.array(val)
+                obj_id = int(vals[np.argmax(vals[:, 1]), 0])
+                is_not_tracked[obj_id] = False
+                tracked_obj[tracked_obj_id].append(objs[obj_id][0])
+                tracked_obj[tracked_obj_id][1] = frame_index
+            elif tracked_obj[tracked_obj_id][1] + allow_undetect_frames < frame_index:
+                tmp_pop_index.append(tracked_obj_id)
+                result.append(tracked_obj[tracked_obj_id])
+            else:
+                tracked_obj[tracked_obj_id].append(tracked_obj[tracked_obj_id][-1])
+        if len(tmp_pop_index):
+            for index in sorted(tmp_pop_index, reverse=True):
+                tracked_obj.pop(index)
+
+        #append all un-tracked object to tracking list.
+        for obj_id, obj in enumerate(objs):
+            if is_not_tracked[obj_id]:
+                tracked_obj.append([frame_index, frame_index, obj[0]])
+    
+    #move all tracking list to result
+    result.extend(tracked_obj)
+    return result
+
+                

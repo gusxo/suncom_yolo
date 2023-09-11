@@ -1,0 +1,1 @@
+python project3/tracking.py '/home/user/mount1/620동원/drive 1/SCMedia/VIDEO/2022/11/16/CAM4/CAM4_20221116182159.mp4' project3/best.pt ~/test 1250 800 1750 -1 --save_images --save_video
