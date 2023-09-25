@@ -22,11 +22,15 @@ if __name__=="__main__":
     parser.add_argument("--save_track", action="store_true", dest="save_track", help="save tracking images.")
     parser.add_argument("--save_predict", action="store_true", dest="save_pred", help="save predict images.")
     parser.add_argument("--save_target", action="store_true", dest="save_target", help="save target images.")
-    parser.add_argument("--save_selected", action="store_true", dest="save_selected", help="save selected(range select) images.")
     parser.add_argument("--save_track_video", action="store_true", dest="save_track_video", help="save tracking images by video.")
+    parser.add_argument("--stream", action="store_true", dest="stream", help="predict by video streaming(yolo stream option)")
     args = parser.parse_args()
 
     print(f"your arguments is : {args}")
+
+    #TODO : implement stream option (using yolo predict option)
+    if args.stream == True:
+        raise NotImplementedError()
 
     try:
         import ultralytics
@@ -53,7 +57,7 @@ if __name__=="__main__":
             cv2.imwrite(f"{savedir}/{i}.png", img)
         print(f"\tdone.", flush=True)
         
-    preds = model.predict(source=images, stream=False)
+    preds = model.predict(source=images, stream=args.stream)
 
     if args.save_images or args.save_pred:
         print(f"saving predict images...", flush=True, end="")
@@ -66,28 +70,23 @@ if __name__=="__main__":
             im.save(f"{savedir}/{i}.png")  # save image
         print(f"\tdone.", flush=True)
 
-    print(f"start range check & duplicate removal...", flush=True, end="")
-    # names: {0: 'line', 1: 'sardine', 2: 'saurel', 3: 'squid'}
-    detected_lines = utils.yolo_cut_by_range(preds, 0, *args.cut, args.dup_rate)
-    print(f"\tdone.", flush=True)
+    img_shape = images[0].shape
+    if args.cut[2] == -1:
+        args.cut = [args.cut[0], args.cut[1], img_shape[1], args.cut[3]]
+    if args.cut[3] == -1:
+        args.cut = [args.cut[0], args.cut[1], args.cut[2], img_shape[0]]
 
-    if args.save_images or args.save_selected:
-        print(f"saving selected line images...", flush=True, end="")
-        savedir = f"{save_root}/selected_lines/"
-        if not os.path.isdir(savedir):
-            Path(savedir).mkdir(parents=True, exist_ok=True)
-        for i, (img, line_info) in enumerate(zip(images, detected_lines)):
-            img = cv2.rectangle(img, (args.cut[0], args.cut[1]), ((img.shape[1] if args.cut[2] == -1 else args.cut[2]), (img.shape[0] if args.cut[3] == -1 else args.cut[3])), (0, 0, 255), 3)
-            for xyxy, conf in line_info:
-                img = cv2.rectangle(img, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0, 255, 255), 3)
-            cv2.imwrite(f"{savedir}/{i}.png", img)
-        print(f"\tdone.", flush=True)
+    print(f"start duplicate removal...", flush=True, end="")
+    # names: {0: 'line', 1: 'sardine', 2: 'saurel', 3: 'squid'}
+    # NOTE: only remove duplicate, range check is apply after tracking method.
+    detected_lines = utils.yolo_cut_by_range(preds, 0, 0, 0, img_shape[1], img_shape[0], args.dup_rate)
+    print(f"\tdone.", flush=True)
 
     track_limit:int = args.tracking_limit
     track_dup_rate:float = args.tracking_dup_rate
 
     print(f"start tracking ...", flush=True, end="")
-    track_lines = utils.yolo_tracking(detected_lines, track_dup_rate, track_limit)
+    track_lines = utils.yolo_tracking(detected_lines, track_dup_rate, track_limit, xyxy=args.cut)
     print(f"\ttrack result : {len(track_lines)} line objects.")
 
     if args.save_track or args.save_images or args.save_track_video:

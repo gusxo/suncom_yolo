@@ -368,10 +368,6 @@ def yolo_cut_by_range(preds, target_class:int, x1, y1, x2, y2, allowed_duplicate
         parent[yp] = xp
 
     for pred in preds:
-        if x2 == -1:
-            x2 = preds[0].orig_shape[1]
-        if y2 == -1:
-            y2 = preds[0].orig_shape[0]
         boxes = pred.boxes.cpu()
         tmp_result = []
         if len(boxes.cls):
@@ -414,7 +410,7 @@ def yolo_cut_by_range(preds, target_class:int, x1, y1, x2, y2, allowed_duplicate
 
     return result
 
-def yolo_tracking(x, duplicate_rate:float, allow_undetect_frames:int):
+def yolo_tracking(x, duplicate_rate:float, allow_undetect_frames:int, xyxy:Union[list, tuple]=None):
     """
     `x` : return value of `utils.yolo_cut_by_range(...)`
     """
@@ -461,6 +457,22 @@ def yolo_tracking(x, duplicate_rate:float, allow_undetect_frames:int):
     
     #move all tracking list to result
     result.extend(tracked_obj)
+
+    #if xyxy parameter is passed, check range after tracking is done.
+    #
+    #if object's some frames in valid range, perform re-allocate last_detect_index.
+    #if object's all frames is not valid, remove from result array.
+    if xyxy is not None:
+        for i in range(len(result)):
+            result[i][1] = -1
+            for j, box in enumerate(result[i][2:]):
+                if box[0] >= xyxy[0] and box[1] >= xyxy[1] and box[2] <= xyxy[2] and box[3] <= xyxy[3]:
+                    result[i][1] = result[i][0] + j
+
+        for i in range(len(result) - 1, -1, -1):
+            if result[i][1] == -1:
+                result.pop(i)
+                
     return result
 
                 
