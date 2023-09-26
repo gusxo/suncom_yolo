@@ -1,9 +1,9 @@
-python suncom_yolo/project3/tracking.py "/home/user/share/ship1_CAM4_20221116182159.mp4" suncom_yolo/project3/best2.pt ~/test 1150 700 1650 1000  --tracking_limit 3 --save_track_video
-python suncom_yolo/project3/tracking.py "/home/user/share/ship2_CAM4_20220904001508.mp4" suncom_yolo/project3/best2.pt ~/test 550 750 1050 1000  --tracking_limit 3 --save_track_video 
-python suncom_yolo/project3/tracking.py "/home/user/share/ship3_ch3_20211207182835.mp4" suncom_yolo/project3/best2.pt ~/test 500 500 1200 900  --tracking_limit 3 --save_track_video
-python suncom_yolo/project3/tracking.py "/home/user/share/ship4_CAM3_20221009171453.mp4" suncom_yolo/project3/best2.pt ~/test 400 400 1300 850  --tracking_limit 3 --save_track_video 
+python suncom_yolo/project3/tracking.py "/home/user/share/ship1_CAM4_20221116182159.mp4" suncom_yolo/project3/best2.pt ~/test 1150 700 1650 1000  --tracking_limit 3 --save_track_video --save_predict_video
+python suncom_yolo/project3/tracking.py "/home/user/share/ship2_CAM4_20220904001508.mp4" suncom_yolo/project3/best2.pt ~/test 550 750 1050 1000  --tracking_limit 3 --save_track_video --save_predict_video
+python suncom_yolo/project3/tracking.py "/home/user/share/ship3_ch3_20211207182835.mp4" suncom_yolo/project3/best2.pt ~/test 500 500 1200 900  --tracking_limit 3 --save_track_video --save_predict_video
+python suncom_yolo/project3/tracking.py "/home/user/share/ship4_CAM3_20221009171453.mp4" suncom_yolo/project3/best2.pt ~/test 400 400 1300 850  --tracking_limit 3 --save_track_video --save_predict_video
 
-python suncom_yolo/project3/tracking.py "/home/user/share/ship1_CAM4_20221223182606.mp4" suncom_yolo/project3/best2.pt ~/test 1150 700 1650 1000  --tracking_limit 3 --save_track_video
-python suncom_yolo/project3/tracking.py "/home/user/share/ship2_CAM4_20220911223838.mp4" suncom_yolo/project3/best2.pt ~/test 550 750 1050 1000  --tracking_limit 3 --save_track_video
-python suncom_yolo/project3/tracking.py "/home/user/share/ship3_ch3_20211209181903.mp4" suncom_yolo/project3/best2.pt ~/test 500 500 1200 900  --tracking_limit 3 --save_track_video
-python suncom_yolo/project3/tracking.py "/home/user/share/ship4_CAM3_20221107164537.mp4" suncom_yolo/project3/best2.pt ~/test 400 400 1300 850  --tracking_limit 3 --save_track_video
+python suncom_yolo/project3/tracking.py "/home/user/share/ship1_CAM4_20221223182606.mp4" suncom_yolo/project3/best2.pt ~/test 1150 700 1650 1000  --tracking_limit 3 --save_track_video --save_predict_video
+python suncom_yolo/project3/tracking.py "/home/user/share/ship2_CAM4_20220911223838.mp4" suncom_yolo/project3/best2.pt ~/test 550 750 1050 1000  --tracking_limit 3 --save_track_video --save_predict_video
+python suncom_yolo/project3/tracking.py "/home/user/share/ship3_ch3_20211209181903.mp4" suncom_yolo/project3/best2.pt ~/test 500 500 1200 900  --tracking_limit 3 --save_track_video --save_predict_video
+python suncom_yolo/project3/tracking.py "/home/user/share/ship4_CAM3_20221107164537.mp4" suncom_yolo/project3/best2.pt ~/test 400 400 1300 850  --tracking_limit 3 --save_track_video --save_predict_video

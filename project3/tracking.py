@@ -23,6 +23,7 @@ if __name__=="__main__":
     parser.add_argument("--save_predict", action="store_true", dest="save_pred", help="save predict images.")
     parser.add_argument("--save_target", action="store_true", dest="save_target", help="save target images.")
     parser.add_argument("--save_track_video", action="store_true", dest="save_track_video", help="save tracking images by video.")
+    parser.add_argument("--save_predict_video", action="store_true", dest="save_predict_video", help="save predict images by video.")
     parser.add_argument("--stream", action="store_true", dest="stream", help="predict by video streaming(yolo stream option)")
     args = parser.parse_args()
 
@@ -48,6 +49,13 @@ if __name__=="__main__":
     
     images, meta = utils.extract_frames([args.video], frame_distance=args.frame_distance, sortlist=False, verbose=1, raise_exception=True, continued_video=False)
 
+    # NOTE:  opencv image format's shape is (y, x, BGR)
+    img_shape = images[0].shape
+    if args.cut[2] == -1:
+        args.cut = [args.cut[0], args.cut[1], img_shape[1], args.cut[3]]
+    if args.cut[3] == -1:
+        args.cut = [args.cut[0], args.cut[1], args.cut[2], img_shape[0]]
+
     if args.save_images or args.save_target:
         print(f"saving original(target) images...", flush=True, end="")
         savedir = f"{save_root}/target_images/"
@@ -59,22 +67,26 @@ if __name__=="__main__":
         
     preds = model.predict(source=images, stream=args.stream)
 
-    if args.save_images or args.save_pred:
+    if args.save_images or args.save_pred or args.save_predict_video:
         print(f"saving predict images...", flush=True, end="")
         savedir = f"{save_root}/detect_images/"
         if not os.path.isdir(savedir):
             Path(savedir).mkdir(parents=True, exist_ok=True)
-        for i, img in enumerate(preds):
-            im_array = img.plot()  # plot a BGR numpy array of predictions
-            im = Image.fromarray(im_array[..., ::-1])  # RGB PIL image
-            im.save(f"{savedir}/{i}.png")  # save image
-        print(f"\tdone.", flush=True)
+        
+        if args.save_images or args.save_pred:
+            for i, img in enumerate(preds):
+                im_array = img.plot()  # plot a BGR numpy array of predictions
+                im = Image.fromarray(im_array[..., ::-1])  # RGB PIL image
+                im.save(f"{savedir}/{i}.png")  # save image
+        
+        if args.save_predict_video:
+            video = cv2.VideoWriter(f"{savedir}/video.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 1.0/args.frame_distance, img_shape[1::-1], True)
+            for img in preds:
+                video.write(img.plot())
+            cv2.destroyAllWindows()
+            video.release()
 
-    img_shape = images[0].shape
-    if args.cut[2] == -1:
-        args.cut = [args.cut[0], args.cut[1], img_shape[1], args.cut[3]]
-    if args.cut[3] == -1:
-        args.cut = [args.cut[0], args.cut[1], args.cut[2], img_shape[0]]
+        print(f"\tdone.", flush=True)
 
     print(f"start duplicate removal...", flush=True, end="")
     # names: {0: 'line', 1: 'sardine', 2: 'saurel', 3: 'squid'}
